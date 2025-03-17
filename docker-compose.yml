@@ -24,8 +24,16 @@ services:
       - postgres
     networks:
       - backend
-    command: node server.js
-
+    command: >
+      sh -c "
+        echo 'Aspetto 20 secondi per PostgreSQL...' &&
+        sleep 20 &&  # Ho aumentato il tempo di attesa per PostgreSQL
+        until nc -z postgres 5432; do echo 'Attendo PostgreSQL...'; sleep 1; done && # Verifica che il DB sia pronto
+        npx prisma generate &&
+        npx prisma migrate dev --name init &&
+        npx prisma migrate deploy &&
+        node server.js # Esegui il server solo dopo le migrazioni
+      "
 
 volumes:
   postgres_data:
