@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_container
+    restart: always
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: .
+    container_name: task-api
+    environment:
+      DATABASE_URL: "postgresql://user:password1@postgres:5432/test?schema=public"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    networks:
+      - backend
+    command: node server.js
+
+
+volumes:
+  postgres_data:
+
+networks:
+  backend:
