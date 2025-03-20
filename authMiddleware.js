@@ -1,28 +1,19 @@
-// authMiddleware.js
 const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv');
 
-dotenv.config();
-
-// Middleware per verificare l'autenticazione
-const authenticateJWT = (req, res, next) => {
-    // Ottieni il token dalla header Authorization
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+function authenticateJWT(req, res, next) {
+    const token = req.header('Authorization')?.split(' ')[1];
 
     if (!token) {
-        return res.status(401).json({ message: 'Access denied. No token provided.' });
+        return res.status(403).send('Access denied');
     }
 
-    // Verifica il token JWT
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) {
-            return res.status(403).json({ message: 'Invalid or expired token.' });
+            return res.status(403).send('Invalid token');
         }
-
-        // Aggiungi l'utente decodificato alla richiesta
         req.user = user;
-        next();  // Vai alla route successiva
+        next();
     });
-};
+}
 
 module.exports = authenticateJWT;

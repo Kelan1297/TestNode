@@ -1,33 +1,16 @@
-// swaggerConfig.js
-
 const swaggerJsdoc = require('swagger-jsdoc');
 
-const swaggerOptions = {
+const options = {
     definition: {
         openapi: '3.0.0',
         info: {
-            title: 'Task Manager API',
+            title: 'Task API',
             version: '1.0.0',
-            description: 'Una semplice API RESTful per la gestione dei task.',
+            description: 'A simple API to manage tasks',
         },
-        components: {
-            securitySchemes: {
-                BearerAuth: {
-                    type: 'http',
-                    scheme: 'bearer',
-                    bearerFormat: 'JWT',
-                },
-            },
-        },
-        security: [
-            {
-                BearerAuth: [],
-            },
-        ],
     },
-    apis: ['./server.js'], // Aggiungi il file dove si trovano le definizioni degli endpoint
+    apis: ['./server.js', './routes/taskRoutes.js'], // Aggiungi i file delle rotte
 };
 
-const swaggerDocs = swaggerJsdoc(swaggerOptions);
-
+const swaggerDocs = swaggerJsdoc(options);
 module.exports = swaggerDocs;

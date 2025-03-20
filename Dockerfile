@@ -1,27 +1,30 @@
-# Usa l'immagine ufficiale di Node.js
+# Usa un'immagine ufficiale di Node.js
 FROM node:18
 
-# Installa le dipendenze di sistema: PostgreSQL client e netcat-openbsd
-RUN apt-get update && apt-get install -y \
-    postgresql-client \
-    netcat-openbsd \
-  && rm -rf /var/lib/apt/lists/*
-
-# Crea e setta la cartella di lavoro
+# Imposta la cartella di lavoro
 WORKDIR /app
 
-# Copia i file di package.json e package-lock.json
+# Copia i file package.json e package-lock.json
 COPY package*.json ./
 
-# Installa le dipendenze del progetto
-RUN npm install
-RUN npm install --save-dev nodemon  # Aggiungi nodemon come dipendenza di sviluppo
+# Installa tutte le dipendenze, sia di produzione che di sviluppo
+RUN npm install && npm install --save-dev nodemon
 
-# Copia il resto dei file del progetto
+# Copia il resto del codice
 COPY . .
 
-# Esporta la porta 3000
+# Esporta la porta dell'app
 EXPOSE 3000
 
-# Comando per eseguire il server con nodemon
-CMD ["npx", "nodemon", "server.js"]
+# Comando di avvio: Esegui tutti i passaggi in un unico comando
+CMD echo "📌 Aspettando che PostgreSQL sia pronto..." && \
+    until pg_isready -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB}; do \
+        echo "⏳ PostgreSQL non è ancora pronto, attendo..."; sleep 2; \
+    done && \
+    echo "✅ PostgreSQL è pronto!" && \
+    echo "🔄 Genero il client Prisma..." && \
+    npx prisma generate && \
+    echo "📦 Applico le migrazioni al database..." && \
+    npx prisma migrate deploy && \
+    echo "🚀 Avvio il server con nodemon..." && \
+    exec npx nodemon server.js

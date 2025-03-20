@@ -1,3 +1,10 @@
+Avvio:
+docker-compose up --build
+npx prisma generate
+npx prisma migrate dev --name init
+npx prisma migrate deploy
+docker-compose down
+
 Swagger:
 http://localhost:3000/api-docs/#/
 
