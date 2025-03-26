@@ -8,7 +8,8 @@ WORKDIR /app
 COPY package*.json ./
 
 # Installa tutte le dipendenze, sia di produzione che di sviluppo
-RUN npm install && npm install --save-dev nodemon
+RUN npm install && npm install --save-dev nodemon \
+    && apt-get update && apt-get install -y postgresql-client
 
 # Copia il resto del codice
 COPY . .

@@ -9,7 +9,7 @@ const options = {
             description: 'A simple API to manage tasks',
         },
     },
-    apis: ['./server.js', './routes/taskRoutes.js'], // Aggiungi i file delle rotte
+    apis: ['./server.js', './services/routes.js'], // Aggiungi i file delle rotte
 };
 
 const swaggerDocs = swaggerJsdoc(options);

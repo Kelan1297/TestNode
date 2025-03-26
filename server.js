@@ -2,8 +2,8 @@ const express = require('express');
 const dotenv = require('dotenv');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocs = require('./swaggerConfig');
-const taskRoutes = require('./routes/taskRoutes'); // Importa le rotte dei task
-const authRoutes = require('./routes/authRoutes'); // Importa le rotte di autenticazione
+const routes = require('./services/routes');// Importa le rotte dei task
+const authRoutes = require('./services/authRoutes'); // Importa le rotte di autenticazione
 const errorHandler = require('./errorMiddleware'); // Middleware per gestione degli errori
 
 // Carica variabili d'ambiente dal file .env
@@ -18,10 +18,10 @@ app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Rotte di autenticazione
-app.use('/auth', authRoutes);
+app.use('./services/authRoutes.js', authRoutes);
 
 // Rotte dei task
-app.use('/tasks', taskRoutes);
+app.use('./services/routes.js', routes);
 
 // Endpoint di base
 app.get('/', (req, res) => {

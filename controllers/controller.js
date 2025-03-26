@@ -94,7 +94,6 @@ async function deleteTask(req, res, next) {
         next(error);
     }
 }
-
 module.exports = {
     getTasks,
     getTask,
