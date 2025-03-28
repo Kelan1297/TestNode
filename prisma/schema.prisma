@@ -1,0 +1,37 @@
+// schema.prisma
+
+datasource db {
+  provider = "postgresql" // Usa PostgreSQL come database
+  url      = env("DATABASE_URL") // La URL per la connessione al database
+}
+
+generator client {
+  provider      = "prisma-client-js" // Usa Prisma Client
+  binaryTargets = ["native", "debian-openssl-3.0.x"] // Assicurati che funzioni anche in ambienti Docker
+}
+
+model User {
+  id        Int      @id @default(autoincrement()) // ID univoco (autoincrementato)
+  username  String   @unique // Username univoco
+  password  String // Password (deve essere hashata)
+  email     String   @unique // Email univoca
+  createdAt DateTime @default(now()) // Timestamp di creazione
+  updatedAt DateTime @default(now()) @updatedAt // Timestamp di aggiornamento
+  tasks     Task[] // Relazione uno-a-molti con il modello Task
+
+  @@map("users") // Mappa il modello alla tabella 'users' nel database
+}
+
+model Task {
+  id          Int      @id @default(autoincrement()) // ID univoco (autoincrementato)
+  uuid        String   @unique @default(uuid()) // UUID univoco (default con funzione uuid())
+  title       String // Titolo, obbligatorio
+  description String? // Descrizione, opzionale
+  completed   Boolean  @default(false) // Stato di completamento, default false
+  createdAt   DateTime @default(now()) // Timestamp di creazione
+  updatedAt   DateTime @default(now()) @updatedAt // Timestamp di aggiornamento
+  userId      Int // Relazione con l'utente che ha creato il task
+  user        User     @relation(fields: [userId], references: [id]) // Relazione con il modello User
+
+  @@map("tasks") // Mappa il modello alla tabella 'tasks' nel database
+}

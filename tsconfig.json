@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES6",            // Target ES6 or higher for async/await support
+    "module": "CommonJS",       // Use commonjs module system for Node.js
+    "lib": ["es2015", "dom"],   // Include ES2015 or higher libraries
+    "outDir": "dist",
+    "rootDir": "src",
+    "strict": true,             // Optional: Enable strict type checking
+    "esModuleInterop": true,    // Optional: Enable compatibility with CommonJS modules
+    "skipLibCheck": true,       // Optional: Skip library checks for faster compilation
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true
+  },
+  "include": ["src"],
+  "exclude": [
+    "node_modules"              // Exclude node_modules
+  ]
+}
