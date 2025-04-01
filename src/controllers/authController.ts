@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import jwt, { SignOptions } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { validationResult } from 'express-validator';
 import dotenv from 'dotenv';
 
@@ -9,19 +9,92 @@ dotenv.config();
 
 const prisma = new PrismaClient();
 
-// JWT Configuration
 const JWT_SECRET = process.env.JWT_SECRET as string;
-const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '1h'; // String format like '1h', '2d'
+const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '1h';
 
 if (!JWT_SECRET) {
     throw new Error('JWT_SECRET must be defined in environment variables');
 }
 
-export const register = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-): Promise<void> => {
+/**
+ * @openapi
+ * components:
+ *   schemas:
+ *     UserRegister:
+ *       type: object
+ *       required:
+ *         - username
+ *         - email
+ *         - password
+ *       properties:
+ *         username:
+ *           type: string
+ *           example: johndoe
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: john@example.com
+ *         password:
+ *           type: string
+ *           format: password
+ *           minLength: 6
+ *           example: password123
+ *     UserLogin:
+ *       type: object
+ *       required:
+ *         - username
+ *         - password
+ *       properties:
+ *         username:
+ *           type: string
+ *           example: johndoe
+ *         password:
+ *           type: string
+ *           format: password
+ *           example: password123
+ *     AuthResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *         token:
+ *           type: string
+ *         user:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: integer
+ *             username:
+ *               type: string
+ *             email:
+ *               type: string
+ */
+
+/**
+ * @openapi
+ * /auth/register:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Register a new user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UserRegister'
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthResponse'
+ *       400:
+ *         description: Validation error
+ *       409:
+ *         description: User already exists
+ */
+export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -31,7 +104,6 @@ export const register = async (
 
         const { username, email, password } = req.body;
 
-        // Check if user exists
         const existingUser = await prisma.user.findFirst({
             where: { OR: [{ username }, { email }] }
         });
@@ -42,18 +114,16 @@ export const register = async (
             return;
         }
 
-        // Create user
         const hashedPassword = await bcrypt.hash(password, 12);
         const newUser = await prisma.user.create({
             data: { username, email, password: hashedPassword },
             select: { id: true, username: true, email: true }
         });
 
-        // Generate token with type assertion for expiresIn
         const token = jwt.sign(
             { userId: newUser.id, username: newUser.username },
             JWT_SECRET,
-            { expiresIn: JWT_EXPIRATION } as SignOptions
+            { expiresIn: JWT_EXPIRATION }
         );
 
         res.status(201).json({
@@ -66,11 +136,31 @@ export const register = async (
     }
 };
 
-export const login = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-): Promise<void> => {
+/**
+ * @openapi
+ * /auth/login:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Authenticate user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UserLogin'
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthResponse'
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Invalid credentials
+ */
+export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -80,7 +170,6 @@ export const login = async (
 
         const { username, password } = req.body;
 
-        // Find user
         const user = await prisma.user.findUnique({
             where: { username },
             select: { id: true, username: true, password: true, email: true }
@@ -91,21 +180,18 @@ export const login = async (
             return;
         }
 
-        // Verify password
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             res.status(401).json({ message: 'Invalid credentials' });
             return;
         }
 
-        // Generate token with type assertion for expiresIn
         const token = jwt.sign(
             { userId: user.id, username: user.username },
             JWT_SECRET,
-            { expiresIn: JWT_EXPIRATION } as SignOptions
+            { expiresIn: JWT_EXPIRATION }
         );
 
-        // Remove password from response
         const { password: _, ...userData } = user;
 
         res.json({

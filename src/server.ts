@@ -3,37 +3,58 @@ import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocs from "./config/swaggerConfig";
 import routes from "./routes/routes";
-import authRoutes from "./routes/authRoutes";// Importa le rotte di autenticazione
-import {errorHandler} from "./middleware/errorMiddleware";// Middleware per gestione degli errori
+import authRoutes from "./routes/authRoutes";
+import { errorHandler } from "./middleware/errorMiddleware";
 
-// Carica variabili d'ambiente dal file .env
 dotenv.config();
 
 const app = express();
 
-// Middleware per parse JSON
+// Middleware
 app.use(express.json());
 
-// Serve la documentazione interattiva di Swagger
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+// Configurazione Swagger UI avanzata
+const swaggerOptions = {
+    customSiteTitle: "Task API Documentation",
+    customCss: '.swagger-ui .topbar { background-color: #2c3e50 }',
+    customfavIcon: '/assets/favicon.ico',
+    explorer: true
+};
 
-// Rotte di autenticazione
-app.use('/auth', authRoutes);
+app.use(
+    '/api/v1/docs',
+    swaggerUi.serve,
+    (req: express.Request, res: express.Response, next: express.NextFunction) => {
+        // Inietta il JWT token nella UI se presente
+        if (req.query.token) {
+            (swaggerDocs as any).components.securitySchemes.bearerAuth.default = `Bearer ${req.query.token}`;
+        }
+        swaggerUi.setup(swaggerDocs, swaggerOptions)(req, res, next);
+    }
+);
 
-// Rotte dei task
-app.use('/tasks', routes);
+// Rotte API
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/tasks', routes);
 
-// Endpoint di base
-app.get('/', (req, res) => {
-    res.send('API is running');
+// Health Check
+app.get('/api/v1/health', (req, res) => {
+    res.status(200).json({ status: 'OK', timestamp: new Date() });
 });
 
-// Middleware di gestione degli errori
+// Endpoint di base
+app.get('/api/v1/', (req, res) => {
+    res.redirect('/api/v1/docs'); // Reindirizza automaticamente alla documentazione
+});
+
+// Middleware di gestione errori
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
-    console.log('📡 Server is now accepting requests!');
+    console.log(`📚 API Docs: http://localhost:${PORT}/api/v1/docs`);
+    console.log(`🔐 Test Auth: http://localhost:${PORT}/api/v1/auth/login`);
+    console.log(`📝 Test Tasks: http://localhost:${PORT}/api/v1/tasks`);
 });
