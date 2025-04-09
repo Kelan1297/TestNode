@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import { PrismaClient, Task } from '@prisma/client';
+import { Response, NextFunction } from 'express';
+import {Prisma, PrismaClient} from '@prisma/client';
 import { validationResult } from 'express-validator';
 import { AuthenticatedRequest } from '../@types/requestTypes';
 
@@ -102,26 +102,36 @@ export async function getTasks(
     res: Response,
     next: NextFunction
 ): Promise<void> {
-    const { page = '1', limit = '10', title, completed } = req.query;
-    const userId = req.user?.userId;
+    const {page = '1', limit = '10', title, completed} = req.query;
+    const userId = req.user?.id;
 
     const pageNum = Math.max(1, parseInt(page as string, 10));
     const limitNum = Math.min(100, Math.max(1, parseInt(limit as string, 10)));
     const skip = (pageNum - 1) * limitNum;
 
     try {
-        const filters: Record<string, any> = { userId };
-        if (title) filters.title = { contains: title as string, mode: 'insensitive' };
-        if (completed !== undefined) filters.completed = completed === 'true';
+        // Usa Prisma.TaskWhereInput per tipizzare correttamente 'filters'
+        const filters: Prisma.TaskWhereInput = {userId};
+
+        if (title) {
+            filters.title = {contains: title as string, mode: 'insensitive'};
+        }
+
+        if (completed !== undefined) {
+            filters.completed = completed === 'true';
+        }
 
         const [tasks, totalTasks] = await Promise.all([
             prisma.task.findMany({
                 where: filters,
                 skip,
                 take: limitNum,
-                orderBy: { createdAt: 'desc' }
+                //TODO perchèèèèè va in errore
+                // orderBy: {
+                //     createdAt: 'desc', // Ordina per 'createdAt' in ordine decrescente
+                // },
             }),
-            prisma.task.count({ where: filters })
+            prisma.task.count({where: filters}),
         ]);
 
         res.json({
@@ -172,7 +182,7 @@ export async function getTask(
         const task = await prisma.task.findFirst({
             where: {
                 uuid: req.params.uuid,
-                userId: req.user?.userId
+                userId: req.user?.id
             },
         });
 
@@ -231,7 +241,7 @@ export async function createTask(
                 title,
                 description,
                 user: {
-                    connect: { id: req.user?.userId }
+                    connect: { id: req.user?.id }
                 }
             },
         });
@@ -294,7 +304,7 @@ export async function updateTask(
         const existingTask = await prisma.task.findFirst({
             where: {
                 uuid,
-                userId: req.user?.userId
+                userId: req.user?.id
             }
         });
 
@@ -353,7 +363,7 @@ export async function deleteTask(
         const existingTask = await prisma.task.findFirst({
             where: {
                 uuid,
-                userId: req.user?.userId
+                userId: req.user?.id
             }
         });
 

@@ -3,8 +3,12 @@ import jwt from 'jsonwebtoken';
 import {AuthenticatedRequest} from "../@types/requestTypes";
 
 interface JwtPayload {
-    userId: number;
+    id: number;
     username: string;
+    email: string;
+    createdAt: Date;
+    updatedAt: Date;
+    password: string
 }
 
 export const authenticateJWT = (

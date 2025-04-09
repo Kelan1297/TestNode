@@ -3,9 +3,6 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { validationResult } from 'express-validator';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 const prisma = new PrismaClient();
 
