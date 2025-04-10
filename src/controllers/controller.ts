@@ -1,109 +1,18 @@
 import { Response, NextFunction } from 'express';
 import {Prisma, PrismaClient} from '@prisma/client';
 import { validationResult } from 'express-validator';
-import { AuthenticatedRequest } from '../@types/requestTypes';
+import {AuthenticatedRequest} from "../models/requestTypes";
+
 
 const prisma = new PrismaClient();
 
-/**
- * @openapi
- * components:
- *   schemas:
- *     Task:
- *       type: object
- *       properties:
- *         uuid:
- *           type: string
- *           format: uuid
- *         title:
- *           type: string
- *         description:
- *           type: string
- *         completed:
- *           type: boolean
- *         createdAt:
- *           type: string
- *           format: date-time
- *         updatedAt:
- *           type: string
- *           format: date-time
- *     TaskPaginatedResponse:
- *       type: object
- *       properties:
- *         tasks:
- *           type: array
- *           items:
- *             $ref: '#/components/schemas/Task'
- *         totalTasks:
- *           type: integer
- *         totalPages:
- *           type: integer
- *         currentPage:
- *           type: integer
- *         perPage:
- *           type: integer
- *     TaskCreateUpdate:
- *       type: object
- *       required:
- *         - title
- *       properties:
- *         title:
- *           type: string
- *           minLength: 3
- *         description:
- *           type: string
- *         completed:
- *           type: boolean
- */
-
-/**
- * @openapi
- * /tasks:
- *   get:
- *     tags: [Tasks]
- *     summary: Get paginated tasks with filtering
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           default: 1
- *         description: Page number
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 10
- *         description: Items per page
- *       - in: query
- *         name: title
- *         schema:
- *           type: string
- *         description: Filter by title (contains)
- *       - in: query
- *         name: completed
- *         schema:
- *           type: boolean
- *         description: Filter by completion status
- *     responses:
- *       200:
- *         description: List of tasks
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/TaskPaginatedResponse'
- *       401:
- *         description: Unauthorized
- */
 export async function getTasks(
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
 ): Promise<void> {
     const {page = '1', limit = '10', title, completed} = req.query;
-    const userId = req.user?.id;
+    const userId = req.userId
 
     const pageNum = Math.max(1, parseInt(page as string, 10));
     const limitNum = Math.min(100, Math.max(1, parseInt(limit as string, 10)));
@@ -111,7 +20,7 @@ export async function getTasks(
 
     try {
         // Usa Prisma.TaskWhereInput per tipizzare correttamente 'filters'
-        const filters: Prisma.TaskWhereInput = {userId};
+        const filters: { userId: string } = {userId};
 
         if (title) {
             filters.title = {contains: title as string, mode: 'insensitive'};

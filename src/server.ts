@@ -13,25 +13,25 @@ const app = express();
 // Middleware
 app.use(express.json());
 
-// Configurazione Swagger UI avanzata
+/*// Configurazione Swagger UI avanzata
 const swaggerOptions = {
     customSiteTitle: "Task API Documentation",
     customCss: '.swagger-ui .topbar { background-color: #2c3e50 }',
     customfavIcon: '/assets/favicon.ico',
     explorer: true
-};
+};*/
 
-app.use(
+/*app.use(
     '/api/v1/docs',
     swaggerUi.serve,
-    (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    (req: express.Request, requestTypes.ts: express.Response, next: express.NextFunction) => {
         // Inietta il JWT token nella UI se presente
         if (req.query.token) {
             (swaggerDocs as any).components.securitySchemes.bearerAuth.default = `Bearer ${req.query.token}`;
         }
-        swaggerUi.setup(swaggerDocs, swaggerOptions)(req, res, next);
+        swaggerUi.setup(swaggerDocs, swaggerOptions)(req, requestTypes.ts, next);
     }
-);
+);*/
 
 // Rotte API
 app.use('/api/v1/auth', authRoutes);

@@ -18,27 +18,28 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  app:
-    build: .
-    image: testnode
-    ports:
-      - "3000:3000"
-    depends_on:
-      postgres:
-        condition: service_healthy  # L'app parte solo quando PostgreSQL è pronto
-    environment:
-      NODE_ENV: development
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      DATABASE_URL: ${DATABASE_URL}
-      JWT_SECRET: ${JWT_SECRET}  # Aggiungi JWT_SECRET per la protezione dell'API
-      PORT: ${PORT}  # Imposta la porta del server, se necessario
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - ./.env:/app/.env
-      - ./prisma:/app/prisma # ✅ Evita problemi con Prisma
+#  app:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile.backend
+#    ports:
+#      - "3000:3000"
+#    depends_on:
+#      postgres:
+#        condition: service_healthy  # L'app parte solo quando PostgreSQL è pronto
+#    environment:
+#      NODE_ENV: development
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      POSTGRES_DB: ${POSTGRES_DB}
+#      DATABASE_URL: ${DATABASE_URL}
+#      JWT_SECRET: ${JWT_SECRET}  # Aggiungi JWT_SECRET per la protezione dell'API
+#      PORT: ${PORT}  # Imposta la porta del server, se necessario
+#    volumes:
+#      - .:/app
+#      - /app/node_modules
+#      - ./.env:/app/.env
+#      - ./prisma:/app/prisma # ✅ Evita problemi con Prisma
 
 volumes:
   postgres_data:

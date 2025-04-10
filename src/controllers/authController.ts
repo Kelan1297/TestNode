@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { User } from "@prisma/client";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { validationResult } from 'express-validator';
@@ -12,8 +13,8 @@ const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '1h';
 if (!JWT_SECRET) {
     throw new Error('JWT_SECRET must be defined in environment variables');
 }
-
-/**
+/*
+/!**
  * @openapi
  * components:
  *   schemas:
@@ -65,9 +66,9 @@ if (!JWT_SECRET) {
  *               type: string
  *             email:
  *               type: string
- */
+ *!/
 
-/**
+/!**
  * @openapi
  * /auth/register:
  *   post:
@@ -90,7 +91,7 @@ if (!JWT_SECRET) {
  *         description: Validation error
  *       409:
  *         description: User already exists
- */
+ *!/
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const errors = validationResult(req);
@@ -133,7 +134,7 @@ export const register = async (req: Request, res: Response, next: NextFunction):
     }
 };
 
-/**
+/!**
  * @openapi
  * /auth/login:
  *   post:
@@ -156,7 +157,7 @@ export const register = async (req: Request, res: Response, next: NextFunction):
  *         description: Validation error
  *       401:
  *         description: Invalid credentials
- */
+ *!/*/
 export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const errors = validationResult(req);
@@ -183,17 +184,17 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
             return;
         }
 
-        const token = jwt.sign(
-            { userId: user.id, username: user.username },
-            JWT_SECRET,
-            { expiresIn: JWT_EXPIRATION }
-        );
+        // const token = jwt.sign(
+        //     { userId: user.id, username: user.username },
+        //     JWT_SECRET,
+        //     { expiresIn: JWT_EXPIRATION }
+        // );
 
         const { password: _, ...userData } = user;
 
         res.json({
             message: 'Login successful',
-            token,
+            //token,
             user: userData
         });
     } catch (error) {

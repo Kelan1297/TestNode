@@ -1,18 +1,18 @@
 import { Router } from 'express';
-import { AuthenticatedRequest } from '../@types/requestTypes';
-import {
-    getTasks,
-    getTask,
-    createTask,
-    updateTask,
-    deleteTask
-} from '../controllers/controller';
+// import {
+//     getTasks,
+//     getTask,
+//     createTask,
+//     updateTask,
+//     deleteTask
+// } from '../controllers/controller';
 import { authenticateJWT } from '../middleware/authMiddleware';
+import {AuthenticatedRequest} from "../models/requestTypes";
 
 const router = Router();
 
 // Update all route handlers to use proper typing
-router.get('/',
+/*router.get('/',
     (req, res, next) => authenticateJWT(req as AuthenticatedRequest, res, next),
     (req, res, next) => getTasks(req as AuthenticatedRequest, res, next)
 );
@@ -35,6 +35,6 @@ router.put('/:uuid',
 router.delete('/:uuid',
     (req, res, next) => authenticateJWT(req as AuthenticatedRequest, res, next),
     (req, res, next) => deleteTask(req as AuthenticatedRequest, res, next)
-);
+);*/
 
 export default router;

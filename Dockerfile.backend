@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json tsconfig.json ./
 
 # Installa tutte le dipendenze
-RUN npm install && npm install --save-dev nodemon ts-node \
+RUN npm install && npm install --save-dev nodemon \
     && apt-get update && apt-get install -y postgresql-client
 
 # Copia il resto del codice
